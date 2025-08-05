@@ -5,6 +5,7 @@ from firebase_admin import credentials, auth
 import os
 from werkzeug.utils import secure_filename
 import datetime
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -14,8 +15,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Firebase管理SDK初期化
-cred = credentials.Certificate("C:/Users/rinry/Downloads/idolapp-9370a-firebase-adminsdk-fbsvc-13a686849e.json")
+# 環境変数からFirebaseの認証情報を取得
+load_dotenv()
+cred_path = os.getenv("FIREBASE_CREDENTIAL_PATH")
+cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred)
 
 # DB初期化

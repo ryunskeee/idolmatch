@@ -1,3 +1,9 @@
+*.json
+*.env
+*.sqlite3
+idolapp.db
+__pycache__/
+.DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

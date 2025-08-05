@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>プロフィール | 推し活コミュニティ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #fff8e1 0%, #ffe082 100%);
+            min-height: 100vh;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', 'Segoe UI', sans-serif;
+            color: #444;
+        }
+        .profile-card {
+            background: #fffbe7;
+            border-radius: 22px;
+            box-shadow: 0 6px 32px #ffe08255;
+            padding: 38px 28px 32px 28px;
+            max-width: 440px;
+            margin: 48px auto 0 auto;
+            text-align: center;
+        }
+        .profile-icon {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffe082;
+            margin-bottom: 18px;
+            background: #fffde7;
+            box-shadow: 0 2px 12px #ffe08255;
+        }
+        .profile-username {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #ffb300;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .profile-point {
+            font-size: 1.05em;
+            color: #00bfae;
+            margin-bottom: 12px;
+        }
+        .profile-bio-label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ffb300;
+            margin: 28px 0 8px 0;
+            text-align: left;
+            letter-spacing: 1px;
+        }
+        .profile-bio-content {
+            background: #fffde7;
+            border-radius: 12px;
+            padding: 18px 16px;
+            margin-bottom: 18px;
+            font-size: 1.15em;
+            color: #444;
+            min-height: 60px;
+            box-shadow: 0 2px 8px #ffe08233;
+            white-space: pre-line;
+            text-align: left;
+        }
+        .profile-btns {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .profile-btns a {
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-card" id="profileCard">
+            <img src="/static/icons/default.png" alt="アイコン" class="profile-icon" id="profileIcon">
+            <div class="profile-username" id="profileUsername">ユーザー名</div>
+            <div class="profile-point" id="profilePoint"></div>
+            <div class="profile-bio-label">自己紹介・推しポイント</div>
+            <div id="profileSelfIntro" class="profile-bio-content">読み込み中...</div>
+            <div class="profile-btns">
+                <a href="/profilemake" class="btn btn-warning">プロフィール編集</a>
+                <a href="/" class="btn btn-outline-secondary">Homeへ戻る</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        // プロフィール情報を取得して表示
+        fetch('/api/profile', {
+            headers: {
+                'Authorization': 'Bearer ' + (localStorage.getItem('idToken') || '')
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.icon_url) {
+                document.getElementById('profileIcon').src = data.icon_url;
+            }
+            if (data.username) {
+                document.getElementById('profileUsername').innerText = data.username;
+            }
+            if (data.point !== undefined) {
+                document.getElementById('profilePoint').innerText = "ポイント: " + data.point;
+            }
+            if (data.profile) {
+                document.getElementById('profileSelfIntro').innerText = data.profile;
+            } else {
+                document.getElementById('profileSelfIntro').innerText = "自己紹介はまだ登録されていません。";
+            }
+        });
+    </script>
+</body>
+</html>

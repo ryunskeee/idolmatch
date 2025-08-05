@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ランキング | 推し活コミュニティ</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        h2 { color: #5e72b8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+        th, td { border: 1px solid #e3e7ee; padding: 10px; text-align: center; }
+        th { background: #f4f6fa; color: #5e72b8; }
+        tr:nth-child(even) { background: #f8fafc; }
+        .button { background-color: #5e72b8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+        .button:hover { background-color: #3b5998; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>ユーザーランキング</h2>
+    <p>ポイントやレベルで上位のユーザーを表示します。</p>
+    <table id="ranking-table">
+        <thead>
+            <tr>
+                <th>順位</th>
+                <th>ユーザー名</th>
+                <th>レベル</th>
+                <th>ポイント</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ランキングデータがここに入ります -->
+        </tbody>
+    </table>
+    <a href="/" class="button">Homeに戻る</a>
+</div>
+<script>
+    // ランキングデータを取得して表示
+    function loadRanking() {
+        fetch('/api/ranking')
+            .then(res => res.json())
+            .then(users => {
+                const tbody = document.querySelector('#ranking-table tbody');
+                tbody.innerHTML = '';
+                users.forEach((user, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${idx + 1}</td>
+                        <td>${user.username || user.uid}</td>
+                        <td>${user.level || 1}</td>
+                        <td>${user.point || 0}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+    }
+    loadRanking();
+</script>
+</body>
+</html>

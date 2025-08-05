@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ユーザーネーム登録</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="{{ url_for('static', filename='firebase-auth.js') }}"></script>
+    <style>
+        body {
+            background: #f4f6fa;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            color: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .username-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px #b0b8c133;
+            padding: 36px 28px 28px 28px;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            font-weight: bold;
+            color: #3b5998;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 1.5px solid #b0b8c1;
+            margin-bottom: 14px;
+            font-size: 1.1em;
+        }
+        .btn-pop {
+            background: #5e72b8;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px #b0b8c122;
+            transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+            font-size: 1.1em;
+            padding: 0.7em 1.5em;
+        }
+        .btn-pop:hover, .btn-pop:active {
+            transform: scale(1.04);
+            background: #3b5998;
+        }
+        #status {
+            margin-top: 18px;
+            color: #e74c3c;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+        @media (max-width: 600px) {
+            .username-container {
+                border-radius: 0;
+                padding: 24px 4vw 18px 4vw;
+            }
+            h1 {
+                font-size: 1.2em;
+            }
+            .btn-pop {
+                font-size: 1em;
+                padding: 0.7em 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="username-container">
+        <h1>ユーザーネームを決めてください</h1>
+        <input id="username" class="form-control" placeholder="ユーザーネーム">
+        <button onclick="setUsername()" class="btn-pop w-100">登録</button>
+        <div id="status"></div>
+        <script>
+            function setUsername() {
+                const username = document.getElementById('username').value.trim();
+                if (!username) {
+                    document.getElementById('status').innerText = "ユーザーネームを入力してください";
+                    return;
+                }
+                if (!window.currentUser) {
+                    document.getElementById('status').innerText = "ログインしてください";
+                    return;
+                }
+                window.currentUser.getIdToken().then(idToken => {
+                    fetch('/api/username', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({idToken: idToken, username: username})
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('status').innerText = data.error;
+                        } else {
+                            window.location.href = "/rooms";
+                        }
+                    });
+                });
+            }
+        </script>
+    </div>
+</body>
+</html>

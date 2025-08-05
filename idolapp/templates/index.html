@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <title>推し活コミュニティ</title>
+</head>
+<body>
+    <h1>推し活コミュニティ</h1>
+    <p><a href="{{ url_for('logout') }}">ログアウト</a></p>
+
+    <form action="{{ url_for('post') }}" method="post">
+        <textarea name="content" rows="3" cols="50" placeholder="投稿しよう！"></textarea><br>
+        <button type="submit">投稿</button>
+    </form>
+
+    <hr>
+
+    <h2>投稿一覧</h2>
+    {% for post in posts %}
+        <div>
+            <strong>{{ users[post.user_id] }}</strong>: {{ post.content | e }}
+        </div>
+        <hr>
+    {% else %}
+        <p>投稿はまだありません。</p>
+    {% endfor %}
+</body>
+</html>
+

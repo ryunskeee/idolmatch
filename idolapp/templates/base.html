@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}IdolApp{% endblock %}</title>
+</head>
+<body>
+    <div style="text-align:right; margin:1em;">
+        <a href="{{ url_for('profile_page') }}">
+            <button>プロフィール編集</button>
+        </a>
+    </div>
+    {% block content %}{% endblock %}
+</body>
+</html>

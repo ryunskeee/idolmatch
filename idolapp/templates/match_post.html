@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>マッチング投稿を上げる | 推し活コミュニティ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #fff8e1 0%, #ffe082 100%);
+            min-height: 100vh;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', 'Segoe UI', sans-serif;
+            color: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .match-post-container {
+            background: #fffbe7;
+            border-radius: 22px;
+            box-shadow: 0 6px 32px #ffe08255;
+            padding: 40px 32px 32px 32px;
+            width: 100%;
+            max-width: 420px;
+        }
+        h2 {
+            color: #00c853;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 2px;
+            font-size: 1.4em;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #ffb300;
+            margin-top: 10px;
+        }
+        .form-control, textarea {
+            border-radius: 10px;
+            border: 1.5px solid #ffe082;
+            margin-bottom: 14px;
+            font-size: 1.1em;
+            background: #fffde7;
+        }
+        .btn-post {
+            background: linear-gradient(90deg, #b2ff59 0%, #00e676 100%);
+            color: #222;
+            font-weight: bold;
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px #b2ff5944;
+            font-size: 1.1em;
+            padding: 0.7em 1.5em;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-post:hover {
+            background: linear-gradient(90deg, #00e676 0%, #b2ff59 100%);
+            color: #fff;
+            transform: scale(1.04);
+        }
+        #msg {
+            margin-top: 14px;
+            min-height: 1.5em;
+            color: #00c853;
+            text-align: center;
+            font-weight: bold;
+        }
+        .back-link {
+            text-align: right;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding-top: 32px !important;
+                padding-bottom: 48px !important;
+                font-size: 1.15em !important;
+                align-items: flex-start !important;
+            }
+            .match-post-container {
+                border-radius: 0 !important;
+                padding: 32px 6vw 32px 6vw !important;
+                margin: 0 !important;
+                max-width: 100vw !important;
+                min-width: 0 !important;
+                box-shadow: none !important;
+            }
+            h2 {
+                font-size: 1.3em !important;
+                margin-bottom: 18px !important;
+            }
+            .form-label,
+            .form-control,
+            textarea,
+            .btn-post,
+            .btn-outline-secondary,
+            .btn-outline-success {
+                font-size: 1.08em !important;
+            }
+            .btn-post,
+            .btn-outline-secondary,
+            .btn-outline-success {
+                padding: 1em 0 !important;
+            }
+            .back-link {
+                margin-top: 18px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="match-post-container">
+        <h2>マッチング投稿を上げる</h2>
+        <form id="matchPostForm" enctype="multipart/form-data">
+            <label class="form-label" for="idolImage">推し画像</label>
+            <input type="file" id="idolImage" name="idolImage" class="form-control" accept="image/*" required>
+            <label class="form-label" for="idolName">推しの名前</label>
+            <input type="text" id="idolName" name="idolName" class="form-control" placeholder="推しの名前を入力" required>
+            <label class="form-label" for="caption">推しポイント・ひとこと</label>
+            <textarea id="caption" name="caption" class="form-control" rows="3" placeholder="推しの魅力やひとことをどうぞ！"></textarea>
+            <label class="form-label" for="xAccount">X（旧Twitter）アカウントリンク（任意）</label>
+            <input type="url" id="xAccount" name="xAccount" class="form-control" placeholder="https://x.com/your_account">
+            <!-- 投稿フォーム内に追加 -->
+            <label class="form-label" for="feature">特徴タグ（#で区切って新規作成も可）</label>
+            <input type="text" id="feature" name="feature" class="form-control" placeholder="例：#歌#ダンス#かわいい">
+            <div id="tag-suggestions" style="margin:6px 0 12px 0; color:#888;"></div>
+            <button type="submit" class="btn-post">投稿する</button>
+        </form>
+        <div id="msg"></div>
+        <div class="back-link">
+            <a href="/" class="btn btn-outline-secondary btn-sm">Homeへ戻る</a>
+            <a href="/my_match_posts" class="btn btn-outline-success btn-sm" style="margin-left:8px;">自分の投稿一覧を見る</a>
+        </div>
+    </div>
+    <script>
+        // 既存タグ例（本来はAPIで取得するのが理想）
+        let existingTags = ["歌", "ダンス", "トーク", "かわいい", "かっこいい", "明るい", "面白い"];
+
+        // 投稿時に新しいタグをサジェスト候補に自動追加
+        document.getElementById('matchPostForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = document.getElementById('idolImage').files[0];
+            const idolName = document.getElementById('idolName').value.trim();
+            const caption = document.getElementById('caption').value;
+            const xAccount = document.getElementById('xAccount').value.trim();
+            let features = document.getElementById('feature').value.trim();
+            features = features.replace(/(^#+|#+$)/g, '').replace(/#+/g, '#');
+            if (features) features = '#' + features.split('#').filter(t => t.trim()).join('#');
+
+            if (!idolName) {
+                document.getElementById('msg').innerText = "推しの名前を入力してください";
+                return;
+            }
+
+            // 新しいタグをサジェスト候補に追加
+            if (features) {
+                const tags = features.split('#').filter(t => t.trim());
+                tags.forEach(tag => {
+                    if (tag && !existingTags.includes(tag)) {
+                        existingTags.push(tag);
+                    }
+                });
+            }
+
+            if (xAccount) {
+                const xPattern = /^https:\/\/x\.com\/[A-Za-z0-9_]+\/?$/;
+                if (!xPattern.test(xAccount)) {
+                    document.getElementById('msg').innerText = "X（旧Twitter）のプロフィールURLのみ入力してください（例：https://x.com/your_account）";
+                    return;
+                }
+            }
+
+            if (!file) {
+                document.getElementById('msg').innerText = "画像を選択してください";
+                return;
+            }
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('idolName', idolName);
+            formData.append('caption', caption);
+            formData.append('xAccount', xAccount);
+            formData.append('feature', features); // #区切りで送信
+            formData.append('idToken', localStorage.getItem('idToken'));
+            fetch('/api/match_post', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'ok') {
+                    document.getElementById('msg').innerText = "投稿が完了しました！";
+                    document.getElementById('matchPostForm').reset();
+                } else {
+                    document.getElementById('msg').innerText = data.error || "投稿に失敗しました";
+                }
+            });
+        });
+
+        // 入力補完（サジェスト）機能
+        const featureInput = document.getElementById('feature');
+        const suggestionDiv = document.getElementById('tag-suggestions');
+        featureInput.addEventListener('input', function() {
+            // #で区切った最後の部分を取得
+            const input = featureInput.value.split('#').pop().trim();
+            if (!input) {
+                suggestionDiv.innerHTML = "";
+                return;
+            }
+            // 入力中の文字で始まる既存タグをサジェスト
+            const currentTags = featureInput.value.split('#').map(t => t.trim());
+            const suggestions = existingTags.filter(tag => tag.startsWith(input) && !currentTags.includes(tag));
+            suggestionDiv.innerHTML = suggestions.map(tag =>
+                `<span style="cursor:pointer; margin-right:8px;" onclick="addTag('${tag}')">${tag}</span>`
+            ).join('');
+        });
+        window.addTag = function(tag) {
+            let tags = featureInput.value.split('#').map(t => t.trim()).filter(t => t);
+            if (!tags.includes(tag)) tags.push(tag);
+            featureInput.value = '#' + tags.join('#');
+            suggestionDiv.innerHTML = "";
+            featureInput.focus();
+        };
+    </script>
+</body>
+</html>

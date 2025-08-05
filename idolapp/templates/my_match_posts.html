@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>自分のマッチング投稿一覧</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #fffde7; }
+        .post-card { background: #fffbe7; border-radius: 16px; box-shadow: 0 2px 12px #ffe08255; margin-bottom: 18px; padding: 18px; }
+        .post-img { max-width: 120px; max-height: 120px; border-radius: 8px; }
+        .del-btn { margin-left: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h2 class="mb-4" style="color:#ffb300;">自分のマッチング投稿一覧</h2>
+        <div id="post-list"></div>
+        <div>
+            <a href="/" class="btn btn-outline-secondary btn-sm">Homeへ戻る</a>
+            <a href="/match_post" class="btn btn-outline-success btn-sm" style="margin-left:8px;">新規投稿</a>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteAllPosts()" style="margin-bottom:18px;">自分の投稿をすべて削除</button>
+    </div>
+    <script>
+        // ログインユーザーのidToken取得
+        const idToken = localStorage.getItem('idToken');
+        if (!idToken) {
+            document.getElementById('post-list').innerHTML = '<div class="alert alert-warning">ログインしてください。</div>';
+        } else {
+            fetch('/api/my_match_posts', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({idToken})
+            })
+            .then(res => res.json())
+            .then(posts => {
+                if (!Array.isArray(posts)) {
+                    document.getElementById('post-list').innerHTML = '<div class="alert alert-warning">投稿がありません。</div>';
+                    return;
+                }
+                if (posts.length === 0) {
+                    document.getElementById('post-list').innerHTML = '<div class="alert alert-info">まだ投稿がありません。</div>';
+                    return;
+                }
+                document.getElementById('post-list').innerHTML = posts.map(post => `
+                    <div class="post-card d-flex align-items-center">
+                        <img src="${post.img_url}" class="post-img me-3" alt="画像">
+                        <div>
+                            <div><b>名前:</b> ${post.idolName || ''}</div>
+                            <div><b>特徴タグ:</b> ${post.feature || ''}</div>
+                            <div><b>コメント:</b> ${post.caption || ''}</div>
+                            <div><b>Xアカウント:</b> ${post.xAccount ? `<a href="${post.xAccount}" target="_blank">${post.xAccount}</a>` : 'なし'}</div>
+                            <div><b>いいね数:</b> ${post.likes ?? 0}</div>
+                            <button class="btn btn-danger btn-sm del-btn" onclick="deletePost(${post.id})">削除</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function deletePost(postId) {
+            if (!confirm('本当に削除しますか？')) return;
+            const formData = new FormData();
+            formData.append('idToken', localStorage.getItem('idToken'));
+            formData.append('post_id', postId);
+            fetch('/api/delete_match_post', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'ok') {
+                    alert('削除しました');
+                    location.reload();
+                } else {
+                    alert(data.error || '削除に失敗しました');
+                }
+            });
+        }
+
+        function deleteAllPosts() {
+            if (!confirm('本当に全ての投稿を削除しますか？')) return;
+            const formData = new FormData();
+            formData.append('idToken', localStorage.getItem('idToken'));
+            fetch('/api/delete_all_my_match_posts', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'ok') {
+                    alert('すべて削除しました');
+                    location.reload();
+                } else {
+                    alert(data.error || '削除に失敗しました');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

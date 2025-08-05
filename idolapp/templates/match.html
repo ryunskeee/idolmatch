@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>マッチング | 推し活コミュニティ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #fff8e1 0%, #ffe082 100%);
+            min-height: 100vh;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', 'Segoe UI', sans-serif;
+            color: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .match-container {
+            background: #fffbe7;
+            border-radius: 22px;
+            box-shadow: 0 6px 32px #ffe08255;
+            padding: 40px 32px 32px 32px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+        .idol-img {
+            max-width: 90%;
+            max-height: 260px;
+            border-radius: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 12px #ffe08255;
+            border: 2px solid #ffe082;
+            background: #fffde7;
+        }
+        .idol-caption {
+            font-size: 2em;           /* さらに大きく */
+            margin-bottom: 12px;
+            color: #ffb300;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
+        }
+        .btn-swipe {
+            font-size: 1.25em;         /* さらに大きく */
+            font-weight: bold;
+            border-radius: 18px;
+            padding: 1em 2em;          /* パディング増量 */
+            margin: 0 12px;
+            min-width: 150px;          /* 幅も広く */
+        }
+        .btn-profile {
+            background: linear-gradient(90deg, #ffe082 0%, #ffb300 100%);
+            color: #fff;
+            border: none;
+        }
+        .btn-profile:hover {
+            background: linear-gradient(90deg, #ffb300 0%, #ffe082 100%);
+            color: #fff;
+        }
+        .btn-skip {
+            background: #fffde7;
+            color: #ffb300;
+            border: 1.5px solid #ffe082;
+        }
+        .btn-skip:hover {
+            background: #ffe082;
+            color: #fff;
+        }
+        .no-more {
+            color: #aaa;
+            font-size: 1.1em;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="match-container">
+        <h2 style="color:#ffb300; font-weight:bold; margin-bottom:18px;">推しマッチング</h2>
+        <div id="idol-area">
+            <div>読み込み中...</div>
+        </div>
+        <div style="margin-top:18px;">
+            <a href="/" class="btn btn-outline-secondary btn-sm">Homeへ戻る</a>
+        </div>
+    </div>
+    <script>
+        let idols = [];
+        let current = 0;
+
+        function getFeatureParam() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('feature') || '';
+        }
+
+        function loadIdols() {
+            const feature = getFeatureParam();
+            let url = '/api/match_idols';
+            if (feature) {
+                url += '?feature=' + encodeURIComponent(feature);
+            }
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    idols = data;
+                    current = 0;
+                    showIdol();
+                });
+        }
+
+        function likeIdol(idolId) {
+            // すでにいいね済みなら何もしない
+            if (idols[current].likedByMe) {
+                alert("この投稿には既にいいねしています");
+                return;
+            }
+            fetch('/api/like_match_post', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ post_id: idolId, idToken: localStorage.getItem('idToken') })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'ok') {
+                    idols[current].likes = (idols[current].likes || 0) + 1;
+                    idols[current].likedByMe = true; // フロント側でも「いいね済み」状態に
+                    showIdol();
+                } else {
+                    alert(data.error || "いいねできませんでした");
+                }
+            });
+        }
+
+        function showIdol() {
+            const area = document.getElementById('idol-area');
+            if (!idols || idols.length === 0 || current >= idols.length) {
+                area.innerHTML = '<div class="no-more">表示できる投稿がありません</div>';
+                return;
+            }
+            const idol = idols[current];
+            const posterName = idol.username ? idol.username : (idol.user_id ? idol.user_id : "匿名");
+            const idolName = idol.idolName || "（名前未登録）";
+            let xBtn = '';
+            if (idol.xAccount) {
+                xBtn = `<button class="btn btn-swipe btn-profile" onclick="window.open('${idol.xAccount}', '_blank')">Xアカウントを見る</button>`;
+            } else {
+                xBtn = `<button class="btn btn-swipe btn-profile" disabled style="opacity:0.6;">Xアカウント未登録</button>`;
+            }
+
+            // いいねボタンとカウント
+            const likeCount = idol.likes || 0;
+            const likeBtn = idol.likedByMe
+                ? `<button class="btn btn-outline-danger" style="margin-bottom:10px;" disabled>❤️ いいね <span id="like-count">${likeCount}</span></button>`
+                : `<button class="btn btn-outline-danger" style="margin-bottom:10px;" onclick="likeIdol(${idol.id})">❤️ いいね <span id="like-count">${likeCount}</span></button>`;
+
+            // ★同じ名前の部屋があるかチェック
+            fetch('/api/rooms')
+                .then(res => res.json())
+                .then(rooms => {
+                    const sameNameRooms = rooms.filter(room => room.name === idolName);
+                    let sameRoomHtml = '';
+                    if (sameNameRooms.length > 0) {
+                        sameRoomHtml = `<div style="margin:10px 0; color:#1976d2;">
+                            同じ名前の部屋があります：<br>
+                            ${sameNameRooms.map(room => `<a href="/room/${room.id}" target="_blank">${room.name}</a>`).join('<br>')}
+                        </div>`;
+                    }
+                    area.innerHTML = `
+                        <img src="${idol.img_url}" class="idol-img" alt="推し画像">
+                        <div class="idol-caption">${idolName}</div>
+                        <div style="margin-bottom:14px;">
+                            ${idol.caption || '（キャプションなし）'}
+                        </div>
+                        ${likeBtn}
+                        ${sameRoomHtml}
+                        <div style="margin-bottom:18px; color:#888;">投稿者：${posterName}</div>
+                        ${xBtn}
+                        <button class="btn btn-swipe btn-skip" onclick="skipIdol()">スキップ</button>
+                    `;
+                });
+        }
+
+        function skipIdol() {
+            current++;
+            showIdol();
+        }
+
+        loadIdols();
+    </script>
+</body>
+</html>

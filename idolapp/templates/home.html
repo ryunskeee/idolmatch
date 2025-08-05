@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Home | 推し活コミュニティ</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #fff8e1 0%, #ffe082 100%);
+            min-height: 100vh;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', 'Segoe UI', sans-serif;
+            color: #444;
+            padding-bottom: 32px; /* 下余白追加 */
+        }
+        .container {
+            max-width: 560px;
+            margin: 64px auto 0 auto; /* 上余白を増やす */
+            background: #fffbe7;
+            border-radius: 28px;
+            box-shadow: 0 8px 32px #ffe08255;
+            padding: 56px 32px 40px 32px; /* 全体的に余白を増やす */
+            border: 4px double #ffb300;
+        }
+        h1 {
+            color: #ffb300;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 26px;
+            letter-spacing: 2px;
+            font-size: 2em;
+            text-shadow: 0 2px 8px #fffbe7, 0 0px 2px #ffb300;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+        }
+        .btn-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .btn-home-main {
+            font-weight: bold;
+            color: #fff !important;
+            font-size: 1.13em;
+            border-radius: 18px;
+            padding: 0.85em 0;
+            box-shadow: 0 2px 8px #ffe08244;
+            flex: 1 1 45%;
+            min-width: 120px;
+            border: none;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-home-main.btn-warning {
+            background: linear-gradient(90deg, #ffe082 0%, #ffb300 100%);
+        }
+        .btn-home-main.btn-warning:hover {
+            background: linear-gradient(90deg, #ffb300 0%, #ffe082 100%);
+            color: #fff;
+            transform: scale(1.04);
+        }
+        .btn-home-main.btn-info {
+            background: linear-gradient(90deg, #81d4fa 0%, #039be5 100%);
+        }
+        .btn-home-main.btn-info:hover {
+            background: linear-gradient(90deg, #039be5 0%, #81d4fa 100%);
+            color: #fff;
+            transform: scale(1.04);
+        }
+        .btn-login {
+            min-width: 80px;
+            align-self: center;
+            font-size: 0.98em;
+            padding: 0.4em 1.2em;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 1.5px solid #ffe082;
+            color: #888 !important;
+            background: #fffde7;
+            box-shadow: none;
+            margin-left: auto;
+            margin-right: 0;
+        }
+        .btn-login:hover {
+            background: #ffe082;
+            color: #fff !important;
+        }
+        .champion-area {
+            margin: 38px 0 0 0;
+            padding: 26px 14px 20px 14px;
+            background: linear-gradient(120deg, #fffde7 0%, #ffe082 100%);
+            border-radius: 18px;
+            min-height: 140px;
+            text-align: center;
+            box-shadow: 0 2px 16px #ffe08266;
+            border: 2.5px dashed #ffb300;
+        }
+        .champion-title {
+            font-weight: bold;
+            color: #ffb300;
+            font-size: 1.2em;
+            margin-bottom: 14px;
+            letter-spacing: 2px;
+            text-shadow: 0 1px 6px #fffbe7, 0 0px 2px #ffb300;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+        }
+        #champion-images {
+            margin-bottom: 8px;
+        }
+        #champion-images img {
+            max-width: 92%;
+            max-height: 200px;
+            border-radius: 14px;
+            margin: 10px 0;
+            box-shadow: 0 2px 12px #ffe08255;
+            border: 2px solid #ffe082;
+            background: #fffbe7;
+            transition: transform 0.2s;
+        }
+        #champion-images img:hover {
+            transform: scale(1.04) rotate(-2deg);
+            box-shadow: 0 4px 18px #ffb30044;
+        }
+        .upload-form {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .upload-form input[type="file"] {
+            width: 90%;
+            border-radius: 8px;
+            border: 1.5px solid #ffb300;
+            padding: 6px;
+            background: #fffde7;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+        }
+        .upload-form button {
+            width: 90%;
+            background: linear-gradient(90deg, #ffb300 0%, #ffe082 100%);
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 18px;
+            font-size: 1em;
+            padding: 10px 0;
+            margin-top: 4px;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 8px #ffe08244;
+            letter-spacing: 1px;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+        }
+        .upload-form button:hover {
+            background: linear-gradient(90deg, #ffe082 0%, #ffb300 100%);
+            color: #fff;
+            transform: scale(1.03) rotate(1deg);
+        }
+        .icon-crown {
+            font-size: 1.3em;
+            vertical-align: middle;
+            margin: 0 6px;
+            filter: drop-shadow(0 2px 4px #ffe08288);
+        }
+        .otaku-caption {
+            font-size: 1.05em;
+            color: #ffb300;
+            text-align: center;
+            margin-top: 8px;
+            margin-bottom: 18px;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+            letter-spacing: 1px;
+        }
+        .otaku-emoji {
+            font-size: 1.2em;
+            margin: 0 2px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding-bottom: 48px;
+            }
+            .container {
+                border-radius: 0;
+                padding: 32px 6vw 32px 6vw;
+                margin: 0;
+                max-width: 100vw;
+                min-width: 0;
+            }
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 28px;
+            }
+            .champion-title {
+                font-size: 1.08em;
+            }
+            .btn-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .btn-home-main {
+                font-size: 1.08em;
+                padding: 1.1em 0;
+                min-width: 90px;
+            }
+            .btn-login, .btn-outline-secondary {
+                font-size: 1em;
+                padding: 0.7em 0.5em;
+                min-width: 90px;
+            }
+            .champion-area {
+                padding: 24px 8px 20px 8px;
+                margin: 32px 0 0 0;
+            }
+            #champion-images img {
+                max-width: 99%;
+                max-height: 120px;
+            }
+            .upload-form input[type="file"], .upload-form button {
+                width: 99%;
+                font-size: 1em;
+            }
+            body, .container, .champion-area, .btn-bar, .btn-home-main, .btn-login {
+                font-size: 1.12em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>推し活コミュニティ <span style="font-size:0.7em;">Home</span></h1>
+        <div class="otaku-caption">
+            <span class="otaku-emoji">🌟</span>今日も推しを語ろう！<span class="otaku-emoji">💛</span><br>
+            <span style="font-size:0.95em;">「好き」の気持ち、ここで叫べ！</span>
+        </div>
+        <div class="btn-bar">
+            <a href="/rooms" class="btn btn-warning btn-home-main">部屋一覧へ</a>
+            <a href="/mission" class="btn btn-warning btn-home-main">ランキングを見る</a>
+            <a href="/profile" class="btn btn-warning btn-home-main">プロフィール</a>
+            <a href="/match_tag_select" class="btn btn-info btn-home-main">マッチング</a>
+            <a href="/match_post" class="btn btn-success btn-home-main" style="background:linear-gradient(90deg,#b2ff59 0%,#00e676 100%);color:#222;">マッチング投稿を上げる</a>
+            <button id="switchAccountBtn" class="btn btn-login btn-sm" style="background:#ffb300;color:#fff;font-weight:bold;margin-left:8px;">アカウント切り替え</button>
+            <a href="/terms" class="btn btn-outline-secondary btn-sm" style="margin-left:8px;">利用規約</a>
+        </div>
+
+        <div class="champion-area" id="champion-area">
+            <div class="champion-title">
+                <span class="icon-crown">👑</span>
+                チャンピョン宣伝スペース
+                <span class="icon-crown">👑</span>
+            </div>
+            <div style="color:#ffb300; font-size:1em; margin-bottom:10px;">
+                ※今週のランキング1位だけがアップできます！
+            </div>
+            <div id="champion-images"></div>
+            <form id="championForm" class="upload-form" enctype="multipart/form-data">
+                <input type="file" id="championImageInput" accept="image/*">
+                <button type="submit">画像をアップロード</button>
+            </form>
+        </div>
+
+        <button onclick="deleteAllMatchPosts()" class="btn btn-danger">全マッチング投稿を一括削除</button>
+    </div>
+    <script>
+        // チャンピョン画像一覧を取得して表示
+        function loadChampionImages() {
+            fetch('/api/champion_image')
+                .then(res => res.json())
+                .then(images => {
+                    const area = document.getElementById('champion-images');
+                    area.innerHTML = '';
+                    images.forEach(url => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        area.appendChild(img);
+                    });
+                });
+        }
+        loadChampionImages();
+
+        // 画像アップロード
+        document.getElementById('championForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = document.getElementById('championImageInput').files[0];
+            if (!file) return alert('画像を選択してください');
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('idToken', localStorage.getItem('idToken'));
+            fetch('/api/champion_image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.url) {
+                    loadChampionImages();
+                    alert('画像をアップロードしました！\n推しへの愛、届いたぞ！');
+                } else {
+                    alert(data.error || 'アップロード失敗');
+                }
+            });
+        });
+
+        document.getElementById('switchAccountBtn').onclick = function() {
+            localStorage.removeItem('idToken');
+            // Firebaseでサインアウトしてから遷移
+            if (window.firebase && firebase.auth) {
+                firebase.auth().signOut().then(function() {
+                    window.location.href = "/landing";
+                });
+            } else {
+                window.location.href = "/landing";
+            }
+        };
+
+        function deleteAllMatchPosts() {
+            if (!confirm('本当に全てのマッチング投稿を削除しますか？')) return;
+            fetch('/api/delete_all_match_posts', {method: 'POST'})
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === 'ok') {
+                        alert('全て削除しました');
+                        location.reload();
+                    } else {
+                        alert('削除に失敗しました');
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>推し活コミュニティ - 部屋</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(120deg, #fff8e1 0%, #ffe082 100%);
+        }
+        body {
+            min-height: 100vh;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', 'Segoe UI', sans-serif;
+            color: #444;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fffbe7;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px #ffe08255;
+            padding: 32px 18px 18px 18px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            font-weight: bold;
+            color: #ffb300;
+            letter-spacing: 1px;
+            font-size: 1.6em;
+            text-shadow: 0 2px 8px #fffbe7, 0 0px 2px #ffb300;
+            font-family: 'M PLUS Rounded 1c', 'Meiryo', sans-serif;
+        }
+        h4 {
+            color: #ffb300;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        #posts {
+            min-height: 120px;
+            margin-bottom: 18px;
+            background: #fffde7;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1.5px solid #ffe082;
+            flex: 1 1 auto;
+            overflow-y: auto;
+        }
+        textarea {
+            width: 100%;
+            border-radius: 10px;
+            border: 1.5px solid #ffe082;
+            padding: 12px;
+            font-size: 1.1em;
+            background: #fffde7;
+            transition: border-color 0.2s;
+            color: #444;
+            resize: none;
+        }
+        textarea:focus {
+            border-color: #ffb300;
+            outline: none;
+        }
+        .btn-pop {
+            background: linear-gradient(90deg, #ffe082 0%, #ffb300 100%);
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px #ffe08244;
+            transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+            font-size: 1.1em;
+            padding: 0.7em 1.5em;
+        }
+        .btn-pop:hover, .btn-pop:active {
+            transform: scale(1.04);
+            background: linear-gradient(90deg, #ffb300 0%, #ffe082 100%);
+        }
+        .btn-link-pop {
+            color: #ffb300;
+            font-weight: bold;
+            text-decoration: none;
+            margin-bottom: 18px;
+            display: inline-block;
+            transition: color 0.2s;
+            font-size: 1em;
+        }
+        .btn-link-pop:hover {
+            color: #ffb300;
+            text-decoration: underline;
+        }
+        #status {
+            margin-top: 18px;
+            color: #e74c3c;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+        .post-bubble {
+            background: #fff;
+            border-radius: 14px;
+            padding: 8px 14px;
+            margin-bottom: 10px;
+            border: 1.5px solid #ffe082;
+            font-size: 1.07em;
+            color: #444;
+            box-shadow: 0 1px 4px #ffe08244;
+            word-break: break-all;
+        }
+        .post-username {
+            color: #ffb300;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+        @media (max-width: 600px) {
+            .chat-container {
+                border-radius: 0;
+                min-height: 100vh;
+                padding: 18px 4vw 12vw 4vw;
+            }
+            h1 {
+                font-size: 1.2em;
+            }
+            h4 {
+                font-size: 1em;
+            }
+            .btn-pop, .btn-link-pop {
+                font-size: 1em;
+                padding: 0.7em 1.2em;
+            }
+            textarea {
+                font-size: 1em;
+            }
+            .profile-link {
+                position: static;
+                display: block;
+                text-align: right;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="{{ url_for('static', filename='firebase-auth.js') }}"></script>
+</head>
+<body>
+    <div class="chat-container d-flex flex-column">
+        <h1 class="mb-2">部屋内チャット</h1>
+        <h4 class="mb-3">部屋名：{{ room_name }}</h4>
+        <a href="/rooms" class="btn-link-pop">&larr; 部屋一覧に戻る</a>
+        <div id="posts" class="mb-3 flex-grow-1">読み込み中…</div>
+        <textarea id="post-content" rows="2" placeholder="投稿を書いてください"></textarea>
+        <div class="d-flex gap-2 mt-3">
+            <button onclick="postContent()" class="btn-pop flex-fill">投稿</button>
+            <a href="/" class="btn-pop flex-fill" style="background: #fffde7; color: #ffb300; text-align:center; text-decoration:none; line-height:2.2em;">Homeへ戻る</a>
+        </div>
+        <div id="status"></div>
+        <div id="delete-room-area"></div>
+    </div>
+    <script>
+        const roomId = {{ room_id }};
+        function updateStatus(msg) {
+            document.getElementById('status').innerText = msg;
+        }
+        function loadPosts() {
+            fetch(`/api/posts?room_id=${roomId}`)
+            .then(res => res.json())
+            .then(posts => {
+                const div = document.getElementById('posts');
+                div.innerHTML = '';
+                if (posts.length === 0) {
+                    div.innerText = '投稿はまだありません。';
+                    return;
+                }
+                posts.forEach(post => {
+                    const p = document.createElement('div');
+                    p.className = "post-bubble d-flex align-items-center";
+                    // アイコン画像（なければデフォルト画像）
+                    const icon = document.createElement('img');
+                    icon.src = post.icon_url || '/static/icons/default.png';
+                    icon.alt = "icon";
+                    icon.style.width = "36px";
+                    icon.style.height = "36px";
+                    icon.style.objectFit = "cover";
+                    icon.style.borderRadius = "50%";
+                    icon.style.marginRight = "10px";
+                    // 投稿内容
+                    let crown = '';
+                    if (post.uid && post.creator_uid && String(post.uid) === String(post.creator_uid)) {
+                        crown = ' <span style="font-size:1.2em;">👑</span>';
+                    }
+                    const contentDiv = document.createElement('div');
+                    contentDiv.innerHTML = `<span class="post-username">${post.username || post.uid}${crown}</span> ${post.content}`;
+
+                    // レイアウト
+                    p.appendChild(icon);
+                    p.appendChild(contentDiv);
+                    div.appendChild(p);
+                });
+                div.scrollTop = div.scrollHeight;
+            });
+        }
+        function postContent() {
+            const content = document.getElementById('post-content').value.trim();
+            if (!window.currentUser) {
+                updateStatus('ログインしてください');
+                return;
+            }
+            if (!content) {
+                updateStatus('投稿内容を入力してください');
+                return;
+            }
+            window.currentUser.getIdToken().then(idToken => {
+                fetch('/api/posts', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({idToken: idToken, content: content, room_id: roomId})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        updateStatus('投稿エラー: ' + data.error);
+                    } else {
+                        updateStatus('投稿成功！');
+                        document.getElementById('post-content').value = '';
+                        loadPosts();
+                    }
+                });
+            });
+        }
+        firebase.auth().onAuthStateChanged(user => {
+            window.currentUser = user;
+            if (user) {
+                loadPosts();
+                updateStatus('ログイン中: ' + user.email);
+            } else {
+                updateStatus('ログインしてください');
+                setTimeout(() => window.location.href = '/', 2000);
+            }
+        });
+        function signOut() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = '/';
+            });
+        }
+        // ページ表示時に削除ボタンを表示するか判定
+        function showDeleteButtonIfOwner(creator_uid) {
+            const myUid = localStorage.getItem('uid');
+            if (String(myUid) === String(creator_uid)) {
+                document.getElementById('delete-room-area').innerHTML =
+                    `<button class="btn btn-danger mb-3" onclick="deleteRoom()">この部屋を削除</button>`;
+            }
+        }
+
+        // 部屋情報取得して削除ボタン表示
+        fetch(`/api/posts?room_id=${roomId}`)
+            .then(res => res.json())
+            .then(posts => {
+                if (posts.length > 0 && posts[0].creator_uid) {
+                    showDeleteButtonIfOwner(posts[0].creator_uid);
+                }
+            });
+
+        // 削除処理
+        function deleteRoom() {
+            if (!confirm('本当にこの部屋を削除しますか？')) return;
+            const idToken = localStorage.getItem('idToken');
+            fetch(`/api/rooms/${roomId}`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({idToken: idToken})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'ok') {
+                    alert('部屋を削除しました');
+                    window.location.href = '/rooms';
+                } else {
+                    alert(data.error || '削除に失敗しました');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
